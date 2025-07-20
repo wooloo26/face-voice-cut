@@ -10,25 +10,25 @@
 
 ## 使用方法
 
-### 1. 生成人脸特征文件
+### 生成人脸特征文件
 
 ```bash
 make generate
 ```
 
-### 2. 提取视频帧
+### 提取视频帧
 
 ```bash
 make extract
 ```
 
-### 3. 剪辑视频片段
+### 剪辑视频片段
 
 ```bash
 make clip
 ```
 
-### 4. 帮助说明
+### 帮助说明
 
 ```bash
 uv run cli --help
