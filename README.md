@@ -1,39 +1,39 @@
 # face-voice-cut
 
-自动批量剪辑视频中包含指定人脸的片段。
+Automatically batch clip video segments containing specified faces. [中文文档](docs/README_CN.md)
 
-## 功能简介
+## Features
 
-- **人脸特征提取**：从图片文件夹批量生成人脸特征文件（face_embeddings.npz）。
-- **视频帧筛选**：批量处理视频，提取包含目标人脸的帧，支持自定义帧率、起始时间、输出目录等参数。
-- **视频片段剪辑**：自动识别并剪辑包含目标人脸的连续片段，支持容忍丢帧、最小片段时长等参数。
+- **Face Feature Extraction**: Batch generate face feature files (`face_embeddings.npz`) from an image folder.
+- **Video Frame Filtering**: Batch process videos to extract frames containing target faces. Supports custom frame rate, start time, output directory, and more.
+- **Video Segment Clipping**: Automatically identify and clip continuous segments containing target faces. Supports frame loss tolerance, minimum segment duration, and more.
 
-## 使用方法
+## Usage
 
-### 生成人脸特征文件
+### Generate Face Feature File
 
 ```bash
 make generate
 ```
 
-### 提取视频帧
+### Extract Video Frames
 
 ```bash
 make extract
 ```
 
-### 剪辑视频片段
+### Clip Video Segments
 
 ```bash
 make clip
 ```
 
-### 帮助说明
+### Help
 
 ```bash
 uv run cli --help
 ```
 
-## 许可证
+## License
 
 MIT License
