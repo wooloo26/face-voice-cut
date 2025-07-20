@@ -7,5 +7,4 @@ dist
 face_original_images
 face_embeddings.npz
 output_face_frames
-test.mp4
 output_video_clips
