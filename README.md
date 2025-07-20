@@ -13,31 +13,26 @@
 ### 1. 生成人脸特征文件
 
 ```bash
-python -m fvc.cli generate -i face_original_images -o face_embeddings.npz --use-gpu
+make generate
 ```
 
 ### 2. 提取视频帧
 
 ```bash
-python -m fvc.cli extract <视频文件夹> --face-embeddings face_embeddings.npz --fps 2 -o output_face_frames --use-gpu
+make extract
 ```
 
 ### 3. 剪辑视频片段
 
 ```bash
-python -m fvc.cli clip <视频文件夹> --face-embeddings face_embeddings.npz --fps 2 -o output_video_clips --use-gpu --max-missing-frames 20 --min-clip-duration 1.0
+make clip
 ```
 
-## 参数说明
+### 4. 帮助说明
 
-- `--fps`：每秒处理帧数
-- `--use-gpu/--no-use-gpu`：是否启用 GPU 加速
-- `--max-missing-frames`：允许连续丢失帧数
-- `--min-clip-duration`：最小剪辑时长（秒）
-
-## 示例
-
-请将待识别的人脸图片放入 face_original_images 文件夹，视频文件放入指定文件夹，按上述命令依次运行。
+```bash
+uv run cli --help
+```
 
 ## 许可证
 
