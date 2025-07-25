@@ -146,7 +146,7 @@ class VideoClipExtractor:
 
     def extract_clips_from_video(self, video_path: str, output_folder: str) -> List[ClipSegment]:
         """
-        Extract clips from a single video file.
+        Extract clips from a single video file, using a temp file with only video/audio streams.
 
         Args:
             video_path: Path to the video file
@@ -155,6 +155,9 @@ class VideoClipExtractor:
         Returns:
             List of extracted clip segments
         """
+        import subprocess
+        import tempfile
+
         if self.frame_matcher.get_embeddings_size() == 0:
             logger.warning("No face embeddings found in reference file - exiting video processing")
             return []
@@ -165,35 +168,62 @@ class VideoClipExtractor:
         video_title = Path(video_path).stem
         logger.info(f"Starting video clip extraction: {video_title}")
 
-        cap = cv2.VideoCapture(video_path)
-        if not cap.isOpened():
-            raise RuntimeError(f"Unable to open video file: '{video_path}'")
-
+        temp_dir = tempfile.gettempdir()
+        temp_video_path = str(Path(temp_dir) / f"{video_title}_va_temp.mp4")
+        ffmpeg_cmd = [
+            "ffmpeg",
+            "-y",
+            "-i",
+            video_path,
+            "-map",
+            "0:v?",
+            "-map",
+            "0:a?",
+            "-c",
+            "copy",
+            temp_video_path,
+        ]
         try:
-            video_info = self.video_processor.get_video_info(cap)
-            settings = {
-                "max_consecutive_missing_frames": self.max_consecutive_missing_frames,
-                "min_clip_duration": self.min_clip_duration,
-            }
-            self.progress_logger.log_video_specs(video_info, settings)
+            subprocess.run(ffmpeg_cmd, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            cap = cv2.VideoCapture(temp_video_path)
+            if not cap.isOpened():
+                raise RuntimeError(f"Unable to open temp video file: '{temp_video_path}'")
 
-            interval, frame_count = self._prepare_video_processing(cap, video_info["frame_rate"])
+            try:
+                video_info = self.video_processor.get_video_info(cap)
+                settings = {
+                    "max_consecutive_missing_frames": self.max_consecutive_missing_frames,
+                    "min_clip_duration": self.min_clip_duration,
+                }
+                self.progress_logger.log_video_specs(video_info, settings)
 
-            extracted_clips = self._identify_and_extract_clips_realtime(
-                cap,
-                video_info["frame_rate"],
-                interval,
-                frame_count,
-                video_path,
-                output_folder,
-                video_title,
-            )
+                interval, frame_count = self._prepare_video_processing(
+                    cap, video_info["frame_rate"]
+                )
 
-            logger.info(f"Video clip extraction completed! Extracted {len(extracted_clips)} clips")
-            return extracted_clips
+                extracted_clips = self._identify_and_extract_clips_realtime(
+                    cap,
+                    video_info["frame_rate"],
+                    interval,
+                    frame_count,
+                    temp_video_path,
+                    output_folder,
+                    video_title,
+                )
 
+                logger.info(
+                    f"Video clip extraction completed! Extracted {len(extracted_clips)} clips"
+                )
+                return extracted_clips
+
+            finally:
+                cap.release()
         finally:
-            cap.release()
+            try:
+                if Path(temp_video_path).exists():
+                    Path(temp_video_path).unlink()
+            except Exception as e:
+                logger.warning(f"Failed to remove temp video file: {temp_video_path} ({e})")
 
     def _prepare_video_processing(
         self, cap: cv2.VideoCapture, frame_rate: float
